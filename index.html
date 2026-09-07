@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071827" />
+  <title>Atmos — Weather</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <main class="weather-app">
+    <div class="backdrop"></div>
+    <div class="vignette"></div>
+
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="sideMenu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="separator"></div>
+
+      <button class="location-picker" id="locationPicker" aria-label="Change location">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="2.5"></circle>
+        </svg>
+        <span id="locationName">Manali, Himachal Pradesh</span>
+        <svg class="chevron-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 9l6 6 6-6"></path>
+        </svg>
+      </button>
+
+      <div class="top-actions">
+        <span id="dateText">Monday, 2 June</span>
+        <div class="separator"></div>
+        <span id="timeText">07:30 AM</span>
+        <button class="language-btn" id="languageBtn" aria-label="Change language" title="Language">文</button>
+        <button class="icon-btn settings-btn" id="settingsBtn" aria-label="Settings" aria-controls="settingsPanel">⚙</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="current-weather">
+        <div class="temperature"><span id="temperature">18</span><sup>°</sup><small id="tempUnitLabel">C</small></div>
+        <div class="condition-row">
+          <div class="weather-icon partly">
+            <span class="sun"></span>
+            <span class="cloud"></span>
+          </div>
+          <div>
+            <h1 id="condition">Partly Cloudy</h1>
+            <p><span data-i18n="feelsLike">Feels like</span> <strong id="feelsLike">18°</strong></p>
+          </div>
+        </div>
+
+        <div class="hi-lo">
+          <span>↑ <b id="high">22°</b></span>
+          <span>↓ <b id="low">12°</b></span>
+        </div>
+      </div>
+
+      <div class="forecast-panel glass hourly-panel">
+        <div class="panel-title" data-i18n="hourlyForecast">HOURLY FORECAST</div>
+        <div class="hourly" id="hourly"></div>
+      </div>
+
+      <div class="forecast-panel glass weekly-panel">
+        <div class="panel-title" data-i18n="sevenDayForecast">7-DAY FORECAST</div>
+        <div class="weekly" id="weekly"></div>
+      </div>
+
+      <aside class="details glass">
+        <div class="detail-grid">
+          <div class="detail">
+            <div class="detail-icon">≋</div>
+            <div><span data-i18n="wind">WIND</span><strong id="windSpeed">10 km/h</strong><small id="windDir">NNE</small></div>
+          </div>
+          <div class="detail">
+            <div class="detail-icon">♢</div>
+            <div><span data-i18n="humidity">HUMIDITY</span><strong id="humidity">68%</strong></div>
+          </div>
+          <div class="detail">
+            <div class="detail-icon">♧</div>
+            <div><span data-i18n="precipitation">PRECIPITATION</span><strong id="precip">20%</strong></div>
+          </div>
+          <div class="detail">
+            <div class="detail-icon">☼</div>
+            <div><span data-i18n="uvIndex">UV INDEX</span><strong id="uvIndex">3</strong><small id="uvLabel">Moderate</small></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="sun-times glass">
+        <div>
+          <span class="sunrise-icon">☼</span>
+          <div><span data-i18n="sunrise">SUNRISE</span><strong id="sunriseTime">05:24 AM</strong></div>
+        </div>
+        <div>
+          <span class="sunrise-icon">☼</span>
+          <div><span data-i18n="sunset">SUNSET</span><strong id="sunsetTime">07:15 PM</strong></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="weather-map-section" id="weatherMapSection">
+      <div class="weather-map-header">
+        <div>
+          <div class="map-kicker" id="mapKicker">INDIA GIS WEATHER MAP</div>
+          <h2 id="mapTitle">Live Doppler Radar &amp; IMD Station Synoptic Grid</h2>
+        </div>
+      </div>
+
+      <div class="map-controls glass">
+        <div class="map-layer-group" id="mapOverlayGroup">
+          <button class="map-control active" data-map-overlay="rainfall">Rainfall Overlay</button>
+          <button class="map-control" data-map-overlay="temperature">Temperature</button>
+          <button class="map-control" data-map-overlay="wind">Wind Speed</button>
+        </div>
+        <div class="map-layer-group" id="mapBaseGroup">
+          <button class="map-control active" data-map-base="dark">Dark</button>
+          <button class="map-control" data-map-base="streets">Streets</button>
+          <button class="map-control" data-map-base="satellite">Satellite</button>
+        </div>
+      </div>
+
+      <div class="weather-map-wrap glass">
+        <div id="weatherMap"></div>
+        <div class="map-legend glass">
+          <strong id="rainLegendTitle">RAINFALL INTENSITY (MM/H)</strong>
+          <div><i class="legend-normal"></i><span id="legendNormal">Normal</span></div>
+          <div><i class="legend-watch"></i><span id="legendWatch">Moderate / Watch</span></div>
+          <div><i class="legend-heavy"></i><span id="legendHeavy">Heavy Alert</span></div>
+          <div><i class="legend-severe"></i><span id="legendSevere">Severe</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="history-section" id="historySection">
+      <div class="history-header">
+        <div>
+          <div class="map-kicker" id="historyKicker">CLIMATE HISTORY</div>
+          <h2 id="historyTitle">Historical Weather (Up to 10 Years)</h2>
+        </div>
+        <div class="history-range-controls glass">
+          <label for="historyYears" id="historyYearsLabel">Look back</label>
+          <select id="historyYears" class="select-input">
+            <option value="1">1 year</option>
+            <option value="2">2 years</option>
+            <option value="5">5 years</option>
+            <option value="10" selected>10 years</option>
+          </select>
+          <button class="btn-primary" id="historyLoadBtn" type="button">Load history</button>
+        </div>
+      </div>
+
+      <div class="history-toolbar">
+        <div class="segmented" id="historyViewToggle" data-value="monthly">
+          <button data-value="monthly" class="active">Monthly</button>
+          <button data-value="yearly">Yearly</button>
+        </div>
+
+        <div class="history-metric-tabs" id="historyMetricTabs">
+          <button class="map-control active" data-history-metric="temp">Temperature</button>
+          <button class="map-control" data-history-metric="precip">Precipitation</button>
+          <button class="map-control" data-history-metric="wind">Wind Speed</button>
+        </div>
+      </div>
+
+      <div class="history-status" id="historyStatus">Choose a range and tap "Load history" to fetch archive data from Open-Meteo.</div>
+
+      <div class="history-chart-wrap glass" id="historyChartWrap" hidden>
+        <div class="history-chart-title" id="historyChartTitle">Monthly Averages</div>
+        <div class="history-chart" id="historyChart"></div>
+        <div class="history-legend" id="historyLegend"></div>
+      </div>
+
+      <div class="history-summary glass" id="historySummary" hidden>
+        <div class="detail-grid" id="historySummaryGrid"></div>
+      </div>
+    </section>
+
+    <div class="location-menu glass" id="locationMenu">
+      <div class="location-search-wrap">
+        <svg class="location-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M21 21l-4.3-4.3"></path>
+        </svg>
+        <input
+          type="text"
+          id="locationSearchInput"
+          class="location-search-input"
+          placeholder="Search city, town, or village…"
+          autocomplete="off"
+        />
+      </div>
+      <div class="location-search-results" id="locationSearchResults"></div>
+
+      <button class="location-gps-btn" id="useMyLocationBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+        </svg>
+        <span id="useMyLocationLabel">Use my current location</span>
+      </button>
+
+      <div class="location-menu-divider" data-i18n="savedLocations">SAVED LOCATIONS</div>
+      <div class="location-saved-list" id="savedLocationsList"></div>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+
+    <nav class="side-menu glass" id="sideMenu" aria-label="Main menu">
+      <div class="side-menu-header">
+        <span>Atmos</span>
+        <button class="icon-btn" id="closeMenuBtn" aria-label="Close menu">✕</button>
+      </div>
+      <button class="side-menu-item active" data-target=".hero">
+        <span class="side-menu-icon">☀</span> <span data-i18n="today">Today</span>
+      </button>
+      <button class="side-menu-item" data-target=".hourly-panel">
+        <span class="side-menu-icon">⏱</span> <span data-i18n="hourlyForecast">Hourly Forecast</span>
+      </button>
+      <button class="side-menu-item" data-target=".weekly-panel">
+        <span class="side-menu-icon">📅</span> <span data-i18n="sevenDayForecast">7-Day Forecast</span>
+      </button>
+      <button class="side-menu-item" data-target=".details">
+        <span class="side-menu-icon">≋</span> <span data-i18n="windAir">Wind &amp; Air</span>
+      </button>
+      <button class="side-menu-item" data-target=".sun-times">
+        <span class="side-menu-icon">◑</span> <span data-i18n="sunriseSunset">Sunrise &amp; Sunset</span>
+      </button>
+      <button class="side-menu-item" data-target="#weatherMapSection">
+        <span class="side-menu-icon">⌖</span> Weather Map
+      </button>
+      <button class="side-menu-item" data-target="#historySection">
+        <span class="side-menu-icon">📈</span> Weather History
+      </button>
+      <div class="side-menu-divider"></div>
+      <button class="side-menu-item" id="menuSettingsBtn">
+        <span class="side-menu-icon">⚙</span> Settings
+      </button>
+      <button class="side-menu-item" id="menuAboutBtn">
+        <span class="side-menu-icon">ℹ</span> About Atmos
+      </button>
+    </nav>
+
+
+    <div class="language-panel glass" id="languagePanel" role="dialog" aria-modal="true" aria-label="Language">
+      <div class="language-header">
+        <span id="languagePanelTitle">Language</span>
+        <button class="icon-btn" id="closeLanguageBtn" aria-label="Close language">✕</button>
+      </div>
+      <div class="language-body" id="languageOptions"></div>
+    </div>
+
+    <div class="settings-panel glass" id="settingsPanel" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="settings-header">
+        <span data-i18n="settings">Settings</span>
+        <button class="icon-btn" id="closeSettingsBtn" aria-label="Close settings">✕</button>
+      </div>
+
+      <div class="settings-body">
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="units">Units</div>
+
+          <div class="setting-row">
+            <span data-i18n="temperature">Temperature</span>
+            <div class="segmented" id="unitTempToggle" data-value="C">
+              <button data-value="C" class="active">°C</button>
+              <button data-value="F">°F</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <span data-i18n="windSpeed">Wind speed</span>
+            <div class="segmented" id="unitWindToggle" data-value="kmh">
+              <button data-value="kmh" class="active">km/h</button>
+              <button data-value="mph">mph</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <span data-i18n="timeFormat">Time format</span>
+            <div class="segmented" id="unitTimeToggle" data-value="12">
+              <button data-value="12" class="active">12h</button>
+              <button data-value="24">24h</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="preferences">Preferences</div>
+
+          <div class="setting-row">
+            <span data-i18n="autoRefresh">Auto-refresh data</span>
+            <button class="switch" id="autoRefreshToggle" role="switch" aria-checked="true">
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div class="setting-row" id="refreshIntervalRow">
+            <span data-i18n="refreshInterval">Refresh interval</span>
+            <select id="refreshInterval" class="select-input">
+              <option value="5">5 minutes</option>
+              <option value="15" selected>15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">60 minutes</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span data-i18n="notifications">Notifications</span>
+            <button class="switch" id="notifToggle" role="switch" aria-checked="false">
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="liveWeatherData">Live Weather Data</div>
+          <p class="settings-hint">
+            Weather is fetched live from Open-Meteo — free, no API key required.
+          </p>
+          <div class="api-status connected" id="weatherApiStatus">Connected to Open-Meteo.</div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="aiAssistant">AI Weather Assistant</div>
+          <p class="settings-hint">
+            Ask the chat bubble things like "should I carry an umbrella?" — answered by the
+            Groq API using the live conditions above.
+          </p>
+
+          <div class="setting-row">
+            <span data-i18n="enableAssistant">Enable assistant</span>
+            <button class="switch" id="assistantToggle" role="switch" aria-checked="false">
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div class="setting-row stacked" id="mistralKeyRow">
+            <label for="mistralKeyInput" data-i18n="groqApiKey">Groq API key</label>
+            <input type="password" id="mistralKeyInput" class="text-input" placeholder="Paste your Groq API key" autocomplete="off" />
+          </div>
+
+          <div class="setting-row stacked" id="mistralModelRow">
+            <label for="mistralModel" data-i18n="model">Model</label>
+            <select id="mistralModel" class="select-input full">
+              <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (fast, cheapest)</option>
+              <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (best quality)</option>
+              <option value="openai/gpt-oss-20b">GPT-OSS 20B (open, budget)</option>
+            </select>
+          </div>
+
+          <div class="api-status" id="mistralStatus">Add a key above to enable the assistant.</div>
+          <button class="btn-secondary" id="testMistralBtn" style="margin-top:10px;" data-i18n="testApiKey">Test API key</button>
+          <a class="settings-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">Get a Groq API key →</a>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn-secondary" id="resetSettingsBtn" data-i18n="resetDefaults">Reset defaults</button>
+        <button class="btn-primary" id="saveSettingsBtn" data-i18n="saveChanges">Save changes</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Chat FAB -->
+    <button class="chat-fab" id="chatFab" aria-label="Open weather assistant">
+      <svg class="chat-fab-logo" viewBox="0 0 60 60" fill="none">
+        <defs>
+          <linearGradient id="fabLogoGrad" x1="6" y1="10" x2="54" y2="50" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#3ee0ff"/>
+            <stop offset="0.5" stop-color="#c86bff"/>
+            <stop offset="1" stop-color="#ff9d5c"/>
+          </linearGradient>
+        </defs>
+        <path d="M30 8 C24 22 18 34 10 40 C16 44 24 42 30 34 C36 42 44 44 50 40 C42 34 36 22 30 8Z"
+              stroke="url(#fabLogoGrad)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M30 20 l2.6 5.6 5.6 2.6 -5.6 2.6 -2.6 5.6 -2.6 -5.6 -5.6 -2.6 5.6 -2.6z" fill="url(#fabLogoGrad)"/>
+      </svg>
+      <span class="chat-fab-divider"></span>
+      <span class="chat-fab-label">AI CHAT</span>
+      <span class="chat-fab-ripple"></span>
+    </button>
+
+    <div class="chat-panel glass" id="chatPanel" role="dialog" aria-modal="true" aria-label="Weather assistant">
+
+      <!-- Gemini-style animated orb header -->
+      <div class="chat-orb-header" id="chatOrbHeader">
+        <div class="chat-orb-wrap">
+          <canvas class="chat-orb-canvas" id="chatOrbCanvas" width="80" height="80"></canvas>
+          <div class="chat-orb-state" id="chatOrbState">AI</div>
+        </div>
+        <div class="chat-orb-info">
+          <div class="chat-orb-title">Weather Assistant</div>
+          <div class="chat-orb-location" id="chatLocationName">Manali, Himachal Pradesh</div>
+        </div>
+        <button class="icon-btn chat-close-btn" id="closeChatBtn" aria-label="Close assistant">✕</button>
+      </div>
+
+      <!-- Wave visualiser bar (shown while listening / speaking) -->
+      <div class="chat-wave-bar" id="chatWaveBar">
+        <div class="chat-wave-inner">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="chat-wave-label" id="chatWaveLabel">Listening…</div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-bubble assistant">
+          Hi! Ask me about the weather in <strong id="chatLocationNameMsg">Manali</strong> —
+          or say a city name to switch location.
+        </div>
+      </div>
+
+      <!-- Status + input -->
+      <div class="voice-status-bar" id="voiceStatusBar"></div>
+      <form class="chat-input-row" id="chatForm">
+        <button type="button" class="mic-btn" id="micBtn" aria-label="Voice input" title="Hold to talk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="11" rx="3"></rect>
+            <path d="M19 10a7 7 0 0 1-14 0"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+            <line x1="8" y1="22" x2="16" y2="22"></line>
+          </svg>
+          <span class="mic-ripple" id="micRipple"></span>
+        </button>
+        <input type="text" id="chatInput" class="text-input" data-i18n-placeholder="chatPlaceholder" placeholder="Ask about the weather…" autocomplete="off" />
+        <button type="submit" class="btn-primary chat-send" id="chatSendBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
